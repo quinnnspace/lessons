@@ -83,7 +83,7 @@
 
                 
                 if (cursors.up.isDown) {
-                    player.body.velocity.y = -175;
+                    player.body.velocity.y = -220;
                 }
                 
             } else { // In the air
@@ -112,7 +112,7 @@
             
             game.physics.arcade.enable(player);
             player.body.bounce.y = 0.1;
-            player.body.gravity.y = 375;
+            player.body.gravity.y = 600;
             player.body.collideWorldBounds = true;
             player.body.maxVelocity.x = 180;
             
