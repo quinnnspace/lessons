@@ -2,19 +2,20 @@
 <html>
     <head>
         <meta charset="UTF-8" />
-        <title>springbot</title>
+        <title>lessons</title>
         <script src="phaser.min.js"></script>
         <style type="text/css">
             body {
                 margin: 0;
                 background: black;
             }
+            
+
         </style>
     </head>
     <body>
-
+                
     <script type="text/javascript">
-        
 
     window.onload = function() {
 
@@ -26,7 +27,15 @@
         
         function create () {
             
+            game.scale.scaleMode = Phaser.ScaleManager.SHOW_ALL;
+            game.scale.pageAlignVertically = true;
+            
+            game.stage.backgroundColor = '#ffffff';
+            
             game.stage.disableVisibilityChange = true;
+            
+            
+            
             
         }
         
@@ -39,8 +48,5 @@
 
     </script>
 
- <script>  
-    
- </script>  
     </body>
 </html>
