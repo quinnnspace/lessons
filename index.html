@@ -22,26 +22,35 @@
         var game = new Phaser.Game(960, 420, Phaser.AUTO, '', { preload: preload, create: create, update: update });
 
         function preload () {
-            
+            game.load.image('s0base', 'assets/stage0_base.png');
+            game.load.image('s0barriers', 'assets/stage0_barriers.png');
+            game.load.image('s0ground', 'assets/stage0_ground.png');
         }
-        
+                
+                
         function create () {
             
             game.scale.scaleMode = Phaser.ScaleManager.SHOW_ALL;
             game.scale.pageAlignVertically = true;
             
-            game.stage.backgroundColor = '#ffffff';
+            game.stage.backgroundColor = '#ffb420';
             
             game.stage.disableVisibilityChange = true;
             
-            
-            
+            // Display initial base
+            game.add.sprite(0, 0, 's0base');
+
+            // Display ground, platforms and barriers
+            game.add.sprite(0, 0, 's0ground');
+            game.add.sprite(0, 0, 's0barriers');    
+
             
         }
         
         function update () {
             
         }
+        
 
     };
     
