@@ -121,6 +121,7 @@
         
         function addBarriers(level) {
             barriersGraphic = game.add.sprite(0, 0, 'l' + level + 'barriers');
+            barriersGraphic.scale.setTo(0.5, 0.5);
             var barrier;
             switch (level) {
                 case 0: // Level 0 : Homestead
@@ -138,7 +139,7 @@
         }
             
         function addBase(level) {
-            game.add.sprite(0, 0, 'l' + level + 'base');
+            game.add.sprite(0, 0, 'l' + level + 'base').scale.setTo(0.5,0.5);
             switch (level) {
                 case 0: game.stage.backgroundColor = '#ffb420'; break;
             }
