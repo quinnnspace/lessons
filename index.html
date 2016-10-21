@@ -26,7 +26,7 @@
             game.load.image('s0barriers', 'assets/stage0_barriers.png');
             game.load.image('s0ground', 'assets/stage0_ground.png');
             
-            game.load.spritesheet('player', 'assets/player.png', 21, 35, 2);
+            game.load.spritesheet('player', 'assets/player.png', 10, 14, 2);
         }
                 
         var player;
@@ -47,7 +47,8 @@
             game.add.sprite(0, 0, 's0ground');
             game.add.sprite(0, 0, 's0barriers');
             
-            player = game.add.sprite(185, 130, 'player');
+            player = game.add.sprite(185, 138, 'player');
+            player.scale.setTo(1.9, 1.9);
 
             
         }
