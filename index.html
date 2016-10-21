@@ -27,11 +27,14 @@
             game.load.image('s0ground', 'assets/stage0_ground.png');
             
             game.load.spritesheet('player', 'assets/player.png', 10, 14, 2);
+            
+            PIXI.scaleModes.DEFAULT = PIXI.scaleModes.NEAREST;
         }
                 
         var player;
                 
         function create () {
+            
             
             game.scale.scaleMode = Phaser.ScaleManager.SHOW_ALL;
             game.scale.pageAlignVertically = true;
