@@ -27,7 +27,7 @@
             
             game.load.spritesheet('player', 'assets/player.png', 240, 420, 2);
             
-            // PIXI.scaleModes.DEFAULT = PIXI.scaleModes.NEAREST;
+            PIXI.scaleModes.DEFAULT = PIXI.scaleModes.NEAREST;
         }
         var cursors;
         
@@ -38,6 +38,8 @@
         var barriersCollisionGroup;
         
         var platforms;
+        
+        // Phaser functions
                 
         function create () {
             // Start physics and set general properties for game
@@ -61,7 +63,7 @@
         }
         
         function update () {
-            game.physics.arcade.collide(player, barriersCollisionGroup);
+            game.physics.arcade.collide(player, barriersCollisionGroup, barrierCollision, null, this);
             
             if (player.body.touching.down) {
                 if (cursors.left.isDown && player.body.velocity.x > -150 && !cursors.right.isDown) {
@@ -144,6 +146,14 @@
             var barrier = barriersCollisionGroup.create(xPos*5, yPos*5, null);
             barrier.body.setSize(xSize*5, ySize*5);
             barrier.body.immovable = true;
+        }
+        
+        function barrierCollision(sprite, barrier) {
+            // Step up
+            if (barrier.body.height < 6 && (sprite.body.touching.right || sprite.body.touching.left)) {
+                sprite.body.velocity.y -= 30;
+            }
+            
         }
             
         function addPlatforms(level) {
