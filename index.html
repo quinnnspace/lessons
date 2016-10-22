@@ -39,7 +39,12 @@
         var barriersCollisionGroup;
         
         var platforms;
-        var platformColor;
+        var platformColour;
+        
+        var lessons;
+        var lessonColour;
+        
+        var blackbars;
         
         // Phaser functions
                 
@@ -54,6 +59,7 @@
             cursors = game.input.keyboard.createCursorKeys();
                     
             buildLevel(currentLevel);
+            spawnLessons(currentLevel);
                                     
             player = addPlayer(185, 138);
 
@@ -63,6 +69,9 @@
         function update () {
             game.physics.arcade.collide(player, barriersCollisionGroup, barrierCollision);
             game.physics.arcade.collide(player, platforms);
+            
+            game.physics.arcade.collide(lessons, barriersCollisionGroup);
+            game.physics.arcade.collide(lessons, platforms);
             
             
             if (player.body.touching.down) { // On the ground or a platform
@@ -119,7 +128,7 @@
             
             game.physics.arcade.enable(player);
             
-            player.body.bounce.y = 0.1;
+            player.body.bounce.y = 0.2;
             player.body.gravity.y = 580;
             player.body.collideWorldBounds = true;
             
@@ -210,6 +219,48 @@
             switch (level) {
                 case 0: game.stage.backgroundColor = '#fdde95'; break;
             }
+        }
+        
+        function spawnLessons(level) {
+            lessons = game.add.group();
+            lessons.enableBody = true;
+            switch (level) {
+                case 0: // Level 0 : Homestead
+                    lessonColour = 0xe76600;
+                    spawnLesson(11, 67);
+                    spawnLesson(146, 73);
+                    spawnLesson(40, 71);
+                    spawnLesson(90, 22);
+                    spawnLesson(9,40);
+                    break;
+            }
+        }
+        
+        function spawnLesson(xPos, yPos) {
+            var lesson = lessons.create(xPos*5, yPos*5, 'player');
+            lesson.scale.setTo(0.037, 0.037);
+            lesson.tint = lessonColour;
+            
+            lesson.body.bounce.y = 0.9;
+            lesson.body.gravity.y = 300;
+            
+            game.time.events.add(randTime(1000, 4000), bounceLesson, this, lesson);
+            game.time.events.add(randTime(1000, 6000), turnLesson, this, lesson);
+
+        }
+        
+        function bounceLesson(lesson) {
+            lesson.body.velocity.y = -50;
+            game.time.events.add(randTime(1000, 4000), bounceLesson, this, lesson);
+        }
+        
+        function turnLesson(lesson) {
+            lesson.frame = (lesson.frame + 1) % 2;
+            game.time.events.add(randTime(1000, 6000), turnLesson, this, lesson);
+        }
+        
+        function randTime(min,max) {
+            return Math.random() * (max - min) + min;
         }
         
 
