@@ -39,6 +39,7 @@
         var barriersCollisionGroup;
         
         var platforms;
+        var platformColor;
         
         // Phaser functions
                 
@@ -64,7 +65,7 @@
             game.physics.arcade.collide(player, platforms);
             
             
-            if (player.body.touching.down) {
+            if (player.body.touching.down) { // On the ground or a platform
                 if (cursors.left.isDown && player.body.velocity.x > -150 && !cursors.right.isDown) {
                     if (player.body.velocity.x > 0) { player.body.velocity.x = 0;}
                     player.body.velocity.x -= 30;
@@ -83,7 +84,7 @@
 
                 
                 if (cursors.up.isDown) {
-                    player.body.velocity.y = -220;
+                    player.body.velocity.y = -230;
                 }
                 
             } else { // In the air
@@ -119,9 +120,8 @@
             game.physics.arcade.enable(player);
             
             player.body.bounce.y = 0.1;
-            player.body.gravity.y = 600;
+            player.body.gravity.y = 580;
             player.body.collideWorldBounds = true;
-            player.body.maxVelocity.x = 180;
             
             return player;
         }
@@ -136,15 +136,27 @@
                 case 0: // Level 0 : Homestead
                     // Ground
                     makeBarrier(0, 77, 192, 7);
-                    makeBarrier(22, 76, 42, 1);
-                    makeBarrier(24, 75, 36, 1);
-                    makeBarrier(32, 74, 11, 1);
-                    makeBarrier(34, 73, 5, 1);
                     
                     // Walls
-                    makeBarrier(0, 17, 5, 60);
-                    makeBarrier(8, 50, 5, 27);
-                    makeBarrier(171, 44, 6, 33);
+                    makeBarrier(0, 17, 5, 27);
+                    makeBarrier(0, 44, 18, 7);
+                    makeBarrier(0, 51, 7, 20);
+                    makeBarrier(156, 69, 36, 8);
+                    makeBarrier(165, 62, 27, 7);
+                    makeBarrier(171, 43, 21, 19);
+                    makeBarrier(187, 9, 5, 34);
+                    
+                    // Stepped Levels
+                    makeBarrier(0, 71, 17, 1);
+                    makeBarrier(0, 72, 19, 1);
+                    makeBarrier(0, 73, 21, 1);
+                    makeBarrier(0, 74, 26, 1);
+                    makeBarrier(0, 75, 61, 1);
+                    makeBarrier(0, 76, 63, 1);
+                    
+                    makeBarrier(179, 40, 13, 1);
+                    makeBarrier(177, 41, 15, 1);
+                    makeBarrier(173, 42, 19, 1);
                     
                     break;
             }
@@ -165,13 +177,20 @@
         }
             
         function addPlatforms(level) {
-            var colour;
             platforms = game.add.group();
             platforms.enableBody = true;
             switch (level) {
                 case 0: // Level 0 : Homestead
-                    colour = 0xe88500;
-                    makePlatform(34, 33, 18, colour);
+                    platformColour = 0xe76600;
+                    makePlatform(34, 33, 18);
+                    makePlatform(65, 26, 60);
+                    makePlatform(132, 32, 12);
+                    makePlatform(121, 39, 11);
+                    makePlatform(105, 43, 15);
+                    makePlatform(96, 51, 7);
+                    makePlatform(106, 56, 5);
+                    makePlatform(114, 62, 7);
+                    makePlatform(124, 69, 5);
                     
                     
                     break;
@@ -179,17 +198,17 @@
             
         }
         
-        function makePlatform(xPos, yPos, length, colour) {
+        function makePlatform(xPos, yPos, length) {
             var platform = platforms.create(xPos*5, yPos*5, 'platform');
             platform.scale.setTo(length, 1);
-            platform.tint = colour;
+            platform.tint = platformColour;
             platform.body.immovable = true;
         }
             
         function addBase(level) {
             game.add.sprite(0, 0, 'l' + level + 'base').scale.setTo(0.5,0.5);
             switch (level) {
-                case 0: game.stage.backgroundColor = '#ffb420'; break;
+                case 0: game.stage.backgroundColor = '#fdde95'; break;
             }
         }
         
