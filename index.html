@@ -25,9 +25,9 @@
             game.load.image('l0base', 'assets/l0_base.png');
             game.load.image('l0barriers', 'assets/l0_barriers.png');
             
-            game.load.spritesheet('player', 'assets/player.png', 160, 224, 2);
+            game.load.spritesheet('player', 'assets/player.png', 240, 420, 2);
             
-            PIXI.scaleModes.DEFAULT = PIXI.scaleModes.NEAREST;
+            // PIXI.scaleModes.DEFAULT = PIXI.scaleModes.NEAREST;
         }
         var cursors;
         
@@ -107,9 +107,10 @@
         
         function addPlayer(x, y) {
             var player = game.add.sprite(x, y, 'player');
-            player.scale.setTo(0.1, 0.1);
+            player.scale.setTo(0.05, 0.05);
             
             game.physics.arcade.enable(player);
+            
             player.body.bounce.y = 0.1;
             player.body.gravity.y = 600;
             player.body.collideWorldBounds = true;
