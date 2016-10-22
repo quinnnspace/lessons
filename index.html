@@ -20,11 +20,12 @@
     window.onload = function() {
 
         var game = new Phaser.Game(960, 420, Phaser.AUTO, '', { preload: preload, create: create, update: update });
-
+      
         function preload () {
             game.load.image('l0base', 'assets/l0_base.png');
             game.load.image('l0barriers', 'assets/l0_barriers.png');
             game.load.image('platform', 'assets/platform.png');
+            game.load.image('blackbar', 'assets/blackbar.png');
             
             game.load.spritesheet('player', 'assets/player.png', 240, 420, 2);
             
@@ -32,9 +33,9 @@
         }
         var cursors;
         
-        var currentLevel = 0;
-        
         var player;
+       
+        var currentLevel = 0;
         
         var barriersCollisionGroup;
         
@@ -45,6 +46,9 @@
         var lessonColour;
         
         var blackbars;
+        var topBar, bottomBar, messageBar;
+        var message;
+        var dialogMode = false;
         
         // Phaser functions
                 
@@ -56,14 +60,15 @@
             game.scale.pageAlignVertically = true;
             game.stage.disableVisibilityChange = true;
             
+            createBars();
+            
             cursors = game.input.keyboard.createCursorKeys();
                     
             buildLevel(currentLevel);
-            spawnLessons(currentLevel);
-                                    
+                                                
             player = addPlayer(185, 138);
 
-            
+            createBars();
         }
         
         function update () {
@@ -72,6 +77,8 @@
             
             game.physics.arcade.collide(lessons, barriersCollisionGroup);
             game.physics.arcade.collide(lessons, platforms);
+            
+            game.physics.arcade.overlap(player, lessons, collectLesson);
             
             
             if (player.body.touching.down) { // On the ground or a platform
@@ -114,12 +121,32 @@
             
         }
         
-        // quinnn functions: less fun, more chungs
+        // quinnn functions: less fun, more shuns
+        
+        function createBars() {
+            blackbars = game.add.group();
+            topBar = blackbars.create(0, 0, 'blackbar');
+            topBar.scale.setTo(960,game.height/2);
+            bottomBar = blackbars.create(0, game.height, 'blackbar');
+            bottomBar.scale.setTo(960,game.height/2);
+            bottomBar.anchor.y = 1;
+            messageBar = blackbars.create(0, game.height / 2, 'blackbar');
+            messageBar.scale.setTo(960,0); 
+            messageBar.anchor.y = 0.5;
+            openBars();
+        }
+        
+        function openBars() {
+            game.add.tween(topBar.scale).to({y: 0}, 1000, null, true);
+            game.add.tween(bottomBar.scale).to({y: 0}, 1000, null, true);
+            
+        }
         
         function buildLevel(level) {
             addBase(level);
             addBarriers(level);
             addPlatforms(level);
+            spawnLessons(currentLevel);
         }
         
         function addPlayer(x, y) {
@@ -191,7 +218,7 @@
             switch (level) {
                 case 0: // Level 0 : Homestead
                     platformColour = 0xe76600;
-                    makePlatform(34, 33, 18);
+                    makePlatform(36, 33, 14);
                     makePlatform(65, 26, 60);
                     makePlatform(132, 32, 12);
                     makePlatform(121, 39, 11);
@@ -227,19 +254,21 @@
             switch (level) {
                 case 0: // Level 0 : Homestead
                     lessonColour = 0xe76600;
-                    spawnLesson(11, 67);
-                    spawnLesson(146, 73);
-                    spawnLesson(40, 71);
-                    spawnLesson(90, 22);
-                    spawnLesson(9,40);
+                    spawnLesson(11, 67, 'Hopping up steps is all well and good, but jumping can get me so many more places!', 'jump');
+                    spawnLesson(146, 73, '', '');
+                    spawnLesson(40, 71, '', '');
+                    spawnLesson(90, 22), '', '';
+                    spawnLesson(10,40, '', '');
                     break;
             }
         }
         
-        function spawnLesson(xPos, yPos) {
+        function spawnLesson(xPos, yPos, text, skill) {
             var lesson = lessons.create(xPos*5, yPos*5, 'player');
             lesson.scale.setTo(0.037, 0.037);
             lesson.tint = lessonColour;
+            lesson.text = text;
+            lesson.skill = skill;
             
             lesson.body.bounce.y = 0.9;
             lesson.body.gravity.y = 300;
@@ -250,18 +279,34 @@
         }
         
         function bounceLesson(lesson) {
-            lesson.body.velocity.y = -50;
-            game.time.events.add(randTime(1000, 4000), bounceLesson, this, lesson);
+            if (lesson.alive) {
+                lesson.body.velocity.y = -50;
+                game.time.events.add(randTime(1000, 4000), bounceLesson, this, lesson);
+            } 
         }
         
         function turnLesson(lesson) {
-            lesson.frame = (lesson.frame + 1) % 2;
-            game.time.events.add(randTime(1000, 6000), turnLesson, this, lesson);
+            if (lesson.alive) {
+                lesson.frame = (lesson.frame + 1) % 2;
+                game.time.events.add(randTime(1000, 6000), turnLesson, this, lesson);
+            }
         }
         
         function randTime(min,max) {
             return Math.random() * (max - min) + min;
         }
+        
+        function collectLesson(player, lesson) {
+            openDialog('Testing testing 1, 2, 3', lessonColour);
+            lesson.kill();
+        }
+        
+        function openDialog(text, colour) {
+            // game.add.tween(messageBar.scale).to({y: 100}, 500, null, true);
+            message = game.add.text(game.width/3, game.height/2, text, {font: "15px Arial", fill: colour});
+            
+        }
+        
         
 
     };
