@@ -35,7 +35,6 @@
         
         var player;
         
-        var barriersGraphic;
         var barriersCollisionGroup;
         
         var platforms;
@@ -120,18 +119,30 @@
         }
         
         function addBarriers(level) {
-            barriersGraphic = game.add.sprite(0, 0, 'l' + level + 'barriers');
-            barriersGraphic.scale.setTo(0.5, 0.5);
-            var barrier;
+            game.add.sprite(0, 0, 'l' + level + 'barriers').scale.setTo(0.5, 0.5);
+
             switch (level) {
                 case 0: // Level 0 : Homestead
                     // Ground
-                    barrier = barriersCollisionGroup.create(0, 385, null);
-                    barrier.body.setSize(960, 168);
-                    barrier.body.immovable = true;
+                    makeBarrier(0, 77, 192, 7);
+                    makeBarrier(22, 76, 42, 1);
+                    makeBarrier(24, 75, 36, 1);
+                    makeBarrier(32, 74, 11, 1);
+                    makeBarrier(34, 73, 5, 1);
+                    
+                    // Walls
+                    makeBarrier(0, 17, 5, 60);
+                    makeBarrier(8, 50, 5, 27);
+                    makeBarrier(171, 44, 6, 33);
                     
                     break;
             }
+        }
+        
+        function makeBarrier(xPos, yPos, xSize, ySize) {
+            var barrier = barriersCollisionGroup.create(xPos*5, yPos*5, null);
+            barrier.body.setSize(xSize*5, ySize*5);
+            barrier.body.immovable = true;
         }
             
         function addPlatforms(level) {
