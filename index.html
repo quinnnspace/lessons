@@ -24,6 +24,7 @@
         function preload () {
             game.load.image('l0base', 'assets/l0_base.png');
             game.load.image('l0barriers', 'assets/l0_barriers.png');
+            game.load.image('platform', 'assets/platform.png');
             
             game.load.spritesheet('player', 'assets/player.png', 240, 420, 2);
             
@@ -50,20 +51,18 @@
             game.stage.disableVisibilityChange = true;
             
             cursors = game.input.keyboard.createCursorKeys();
-            
-            addBase(currentLevel);
-            
-            barriersCollisionGroup = game.add.group();
-            barriersCollisionGroup.enableBody = true;    
-            addBarriers(currentLevel);
-                        
+                    
+            buildLevel(currentLevel);
+                                    
             player = addPlayer(185, 138);
 
             
         }
         
         function update () {
-            game.physics.arcade.collide(player, barriersCollisionGroup, barrierCollision, null, this);
+            game.physics.arcade.collide(player, barriersCollisionGroup, barrierCollision);
+            game.physics.arcade.collide(player, platforms);
+            
             
             if (player.body.touching.down) {
                 if (cursors.left.isDown && player.body.velocity.x > -150 && !cursors.right.isDown) {
@@ -107,6 +106,12 @@
         
         // quinnn functions: less fun, more chungs
         
+        function buildLevel(level) {
+            addBase(level);
+            addBarriers(level);
+            addPlatforms(level);
+        }
+        
         function addPlayer(x, y) {
             var player = game.add.sprite(x, y, 'player');
             player.scale.setTo(0.05, 0.05);
@@ -122,6 +127,9 @@
         }
         
         function addBarriers(level) {
+            barriersCollisionGroup = game.add.group();
+            barriersCollisionGroup.enableBody = true;
+            
             game.add.sprite(0, 0, 'l' + level + 'barriers').scale.setTo(0.5, 0.5);
 
             switch (level) {
@@ -157,7 +165,25 @@
         }
             
         function addPlatforms(level) {
+            var colour;
+            platforms = game.add.group();
+            platforms.enableBody = true;
+            switch (level) {
+                case 0: // Level 0 : Homestead
+                    colour = 0xe88500;
+                    makePlatform(34, 33, 18, colour);
+                    
+                    
+                    break;
+            }
             
+        }
+        
+        function makePlatform(xPos, yPos, length, colour) {
+            var platform = platforms.create(xPos*5, yPos*5, 'platform');
+            platform.scale.setTo(length, 1);
+            platform.tint = colour;
+            platform.body.immovable = true;
         }
             
         function addBase(level) {
