@@ -50,6 +50,9 @@
             moveInAir: true
         }
         
+        var insightCount;
+        var insightGoal;
+        
         var barriersCollisionGroup;
         
         var platforms;
@@ -62,6 +65,7 @@
         var topBar, bottomBar, messageBar;
         
         var fear;
+        var encounter = false;
         
         var message;
         var dialogMode = false;
@@ -92,9 +96,6 @@
                     
             buildLevel(currentLevel);
                                                 
-            player = addPlayer(74, 72);
-            fear = spawnFear(182, 29);
-
             createBars();
             
             dialogTimer = game.time.create(false);
@@ -119,6 +120,7 @@
                 game.physics.arcade.overlap(player, lessons, collectLesson);
                 
                 game.physics.arcade.collide(fear, barriersCollisionGroup);
+                game.physics.arcade.overlap(player, fear, encounterFear);
 
                 playerControl();        
             } else if (dialogButton.visible) {
@@ -131,6 +133,22 @@
         
         // quinnn functions: less fun, more shuns
         
+        function buildLevel(level) {
+            insightCount = 0;
+            insightGoal = 0;
+            addBase(level);
+            addBarriers(level);
+            addPlatforms(level);
+            spawnLessons(level);
+            
+            switch (level) {
+                case 0: // Level 0 : Homestead
+                    player = addPlayer(74, 72);
+                    fear = spawnFear(182, 29);
+                    break;
+            }
+        }
+        
         function spawnFear(x, y) {
             var fear = game.add.sprite(x*5, y*5, 'player');
             fear.scale.setTo(0.1, 0.1);
@@ -140,12 +158,27 @@
             
             fear.body.bounce.y = 0.9;
             fear.body.gravity.y = 580;
+            fear.dialog = ["Rar! Stay away!", "It isn't safe!"]
             
             
             gameTimer.add(randTime(1000, 4000), bounce, this, fear);
             
             return fear;
             
+            
+        }
+        
+        function encounterFear(player, fear) {
+            if (!encounter) { // Prevent many events from one encounter
+                if (insightCount < insightGoal){
+                    player.body.velocity.x -= 300;
+                    openDialog(fear);
+                } else if (insightCount >= insightGoal) {
+                    fear.kill();
+                    openDialog({dialog: ["Fine. Carry on.","It's not safe, but I'm sure you know best."]});
+                }
+            }
+            encounter = true;
             
         }
         
@@ -206,13 +239,7 @@
             
         }
         
-        function buildLevel(level) {
-            addBase(level);
-            addBarriers(level);
-            addPlatforms(level);
-            spawnLessons(currentLevel);
-        }
-        
+                
         function addPlayer(x, y) {
             var player = game.add.sprite(x*5, y*5, 'player');
             player.scale.setTo(0.06, 0.06);
@@ -244,7 +271,7 @@
                     makeBarrier(156, 69, 36, 8);
                     makeBarrier(165, 62, 27, 7);
                     makeBarrier(171, 43, 21, 19);
-                    makeBarrier(187, 9, 5, 34);
+                    makeBarrier(187, 9, 5, 24);
                     
                     // Stepped Levels
                     makeBarrier(0, 71, 17, 1);
@@ -336,7 +363,7 @@
                                        "Leaving home is scary, but I've stayed here too long."], '');
                     spawnLesson(167, 59, ['With effort I can direct myself, even in the air',
                                           'This can make landing jumps much easier.',
-                                         'Press "LEFT" and "RIGHT" to adjust your direction'], '');
+                                         'Press "LEFT" and "RIGHT" to adjust direction'], '');
                     break;
             }
         }
@@ -350,6 +377,8 @@
             
             lesson.body.bounce.y = 0.85;
             lesson.body.gravity.y = 300;
+            
+            insightGoal++;
             
             gameTimer.add(randTime(1000, 4000), bounce, this, lesson);
             gameTimer.add(randTime(1000, 6000), turn, this, lesson);
@@ -377,6 +406,7 @@
         
         function collectLesson(player, lesson) {
             openDialog(lesson);
+            insightCount++;
             lesson.kill();
             if (lesson.skill.length > 0) {
                 skills[lesson.skill] = true;
@@ -387,7 +417,7 @@
         function openDialog(object) {
             dialogCount = 0;
             dialogTimer.start();
-            dialogTimer.add(500, dialogButtonOn);
+            dialogTimer.add(400, dialogButtonOn);
             
             currentSpeaker = object;
             
@@ -399,7 +429,6 @@
             message = game.add.bitmapText(game.width/2, game.height/2, 'carrier_command', object.dialog[dialogCount], 12);
             message.maxWidth = 800;
             message.anchor.x = 0.5; message.anchor.y = 0.5;
-            // message.tint = lessonColour;
         }
         
         function dialogButtonOn() {
@@ -417,7 +446,7 @@
                 closeDialog();
             } else {
                 message.text = currentSpeaker.dialog[dialogCount];
-                dialogTimer.add(500, dialogButtonOn);
+                dialogTimer.add(400, dialogButtonOn);
             }
         }
         
@@ -428,6 +457,7 @@
             game.physics.arcade.isPaused = false;
             gameTimer.resume();
             game.add.tween(messageBar.scale).to({y: 0}, 100, null, true);
+            gameTimer.add(500, function() {encounter = false;});
         }
         
         
