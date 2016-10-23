@@ -18,12 +18,27 @@
     <script type="text/javascript">
 
     window.onload = function() {
+        
+        var currentLevel = 0;
+        
+        var url = window.location.search+'?';
+        var params = url.split('?')[1].split('&');
+        console.log(params);
+
+        for(var i =0;i<params.length;i++){
+            var temp = params[i].split('=');
+            if (temp[0] == 'l') currentLevel=parseInt(temp[1]);
+        }
+        
+        
 
         var game = new Phaser.Game(960, 420, Phaser.AUTO, '', { preload: preload, create: create, update: update }, false, false);
+        
+        
       
         function preload () {
-            game.load.image('l0base', 'assets/l0_base.png');
-            game.load.image('l0barriers', 'assets/l0_barriers.png');
+            game.load.image('base', 'assets/l' + currentLevel + '_base.png');
+            game.load.image('barriers', 'assets/l' + currentLevel + '_barriers.png');
             game.load.image('platform', 'assets/platform.png');
             game.load.image('blackbar', 'assets/blackbar.png');
             
@@ -35,11 +50,12 @@
             
             PIXI.scaleModes.DEFAULT = PIXI.scaleModes.NEAREST;
         }
+        
+        
+        
         var cursors;
         
         var gameTimer;
-        
-        var currentLevel = 0;
         
         var player;
         
@@ -63,6 +79,7 @@
         
         var blackbars;
         var topBar, bottomBar, messageBar;
+        var barCollide = false;
         
         var fear;
         var encounter = false;
@@ -73,6 +90,8 @@
         var dialogTimer;
         var dialogButton;
         var currentSpeaker;
+        
+
         
         // Phaser functions
                 
@@ -89,15 +108,11 @@
             
             gameTimer = game.time.create(false);
             gameTimer.start();
-            
-            createBars();
-            
+        
             cursors = game.input.keyboard.createCursorKeys();
                     
             buildLevel(currentLevel);
-                                                
-            createBars();
-            
+                                                        
             dialogTimer = game.time.create(false);
             dialogButton = game.add.sprite(game.width - 50, game.height /2, 'downarrow');
             dialogButton.scale.setTo(0.5,0.5);
@@ -121,6 +136,10 @@
                 
                 game.physics.arcade.collide(fear, barriersCollisionGroup);
                 game.physics.arcade.overlap(player, fear, encounterFear);
+                
+                if (barCollide) {
+                    game.physics.arcade.collide(player,blackbars);
+                }
 
                 playerControl();        
             } else if (dialogButton.visible) {
@@ -145,7 +164,12 @@
                 case 0: // Level 0 : Homestead
                     player = addPlayer(74, 72);
                     fear = spawnFear(182, 29);
+                    createBars(0);
                     break;
+                case 1: // Level 1: Adventure
+                    player = addPlayer(10, 67);
+                    fear = spawnFear(169,65);
+                    createBars(25);
             }
         }
         
@@ -220,22 +244,29 @@
             else if (player.body.velocity.x > 0) { player.frame = 0; }
         }
         
-        function createBars() {
+        function createBars(ySize) {
             blackbars = game.add.group();
             topBar = blackbars.create(0, 0, 'blackbar');
             topBar.scale.setTo(960,game.height/2);
+            game.physics.arcade.enable(topBar);
+            topBar.body.immovable = true;
+            
             bottomBar = blackbars.create(0, game.height, 'blackbar');
             bottomBar.scale.setTo(960,game.height/2);
             bottomBar.anchor.y = 1;
-            messageBar = blackbars.create(0, game.height / 2, 'blackbar');
+            game.physics.arcade.enable(bottomBar);
+            bottomBar.body.immovable = true;
+            
+            messageBar = game.add.sprite(0, game.height / 2, 'blackbar');
             messageBar.scale.setTo(960,0); 
             messageBar.anchor.y = 0.5;
-            openBars();
+            openBars(ySize);
         }
         
-        function openBars() {
-            game.add.tween(topBar.scale).to({y: 0}, 1000, null, true);
-            game.add.tween(bottomBar.scale).to({y: 0}, 1000, null, true);
+        function openBars(ySize) {
+            game.add.tween(topBar.scale).to({y: ySize}, 1000, null, true);
+            game.add.tween(bottomBar.scale).to({y: ySize}, 1000, null, true);
+            gameTimer.add(1000, function() {barCollide = true});
             
         }
         
@@ -257,7 +288,7 @@
             barriersCollisionGroup = game.add.group();
             barriersCollisionGroup.enableBody = true;
             
-            game.add.sprite(0, 0, 'l' + level + 'barriers').scale.setTo(0.5, 0.5);
+            game.add.sprite(0, 0, 'barriers').scale.setTo(0.5, 0.5);
 
             switch (level) {
                 case 0: // Level 0 : Homestead
@@ -333,7 +364,7 @@
         }
             
         function addBase(level) {
-            game.add.sprite(0, 0, 'l' + level + 'base').scale.setTo(0.5,0.5);
+            game.add.sprite(0, 0, 'base').scale.setTo(0.5,0.5);
             switch (level) {
                 case 0: game.stage.backgroundColor = '#fdde95'; break;
             }
