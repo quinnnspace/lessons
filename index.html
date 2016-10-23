@@ -27,15 +27,19 @@
             game.load.image('platform', 'assets/platform.png');
             game.load.image('blackbar', 'assets/blackbar.png');
             
+            game.load.bitmapFont('carrier_command', 'assets/carrier_command.png', 'assets/carrier_command.xml');
+            
             game.load.spritesheet('player', 'assets/player.png', 240, 420, 2);
             
             PIXI.scaleModes.DEFAULT = PIXI.scaleModes.NEAREST;
         }
         var cursors;
         
-        var player;
-       
+        var gameTimer;
+        
         var currentLevel = 0;
+        
+        var player;
         
         var barriersCollisionGroup;
         
@@ -60,6 +64,9 @@
             game.scale.pageAlignVertically = true;
             game.stage.disableVisibilityChange = true;
             
+            gameTimer = new Phaser.Timer(game, false);
+            gameTimer.start();
+            
             createBars();
             
             cursors = game.input.keyboard.createCursorKeys();
@@ -72,15 +79,28 @@
         }
         
         function update () {
-            game.physics.arcade.collide(player, barriersCollisionGroup, barrierCollision);
-            game.physics.arcade.collide(player, platforms);
             
-            game.physics.arcade.collide(lessons, barriersCollisionGroup);
-            game.physics.arcade.collide(lessons, platforms);
+            if (!dialogMode) {
+                game.physics.arcade.collide(player, barriersCollisionGroup, barrierCollision);
+                game.physics.arcade.collide(player, platforms);
+
+                game.physics.arcade.collide(lessons, barriersCollisionGroup);
+                game.physics.arcade.collide(lessons, platforms);
+
+                game.physics.arcade.overlap(player, lessons, collectLesson);
+
+                playerControl();        
+            } else {
+                if (cursors.down.isDown) {
+                    closeDialog();
+                }
+            }
             
-            game.physics.arcade.overlap(player, lessons, collectLesson);
-            
-            
+        }
+        
+        // quinnn functions: less fun, more shuns
+        
+        function playerControl() {
             if (player.body.touching.down) { // On the ground or a platform
                 if (cursors.left.isDown && player.body.velocity.x > -150 && !cursors.right.isDown) {
                     if (player.body.velocity.x > 0) { player.body.velocity.x = 0;}
@@ -116,12 +136,7 @@
             
             if (player.body.velocity.x < 0) { player.frame = 1; }
             else if (player.body.velocity.x > 0) { player.frame = 0; }
-            
-            
-            
         }
-        
-        // quinnn functions: less fun, more shuns
         
         function createBars() {
             blackbars = game.add.group();
@@ -273,22 +288,22 @@
             lesson.body.bounce.y = 0.9;
             lesson.body.gravity.y = 300;
             
-            game.time.events.add(randTime(1000, 4000), bounceLesson, this, lesson);
-            game.time.events.add(randTime(1000, 6000), turnLesson, this, lesson);
+            gameTimer.add(randTime(1000, 4000), bounceLesson, this, lesson);
+            gameTimer.add(randTime(1000, 6000), turnLesson, this, lesson);
 
         }
         
         function bounceLesson(lesson) {
             if (lesson.alive) {
                 lesson.body.velocity.y = -50;
-                game.time.events.add(randTime(1000, 4000), bounceLesson, this, lesson);
+                gameTimer.add(randTime(1000, 4000), bounceLesson, this, lesson);
             } 
         }
         
         function turnLesson(lesson) {
             if (lesson.alive) {
                 lesson.frame = (lesson.frame + 1) % 2;
-                game.time.events.add(randTime(1000, 6000), turnLesson, this, lesson);
+                gameTimer.add(randTime(1000, 6000), turnLesson, this, lesson);
             }
         }
         
@@ -302,9 +317,22 @@
         }
         
         function openDialog(text, colour) {
-            // game.add.tween(messageBar.scale).to({y: 100}, 500, null, true);
-            message = game.add.text(game.width/3, game.height/2, text, {font: "15px Arial", fill: colour});
+            dialogMode = true;
+            game.physics.arcade.isPaused = true;
+            gameTimer.pause();
             
+            game.add.tween(messageBar.scale).to({y: 50}, 100, null, true);
+            message = game.add.bitmapText(game.width/2, game.height/2, 'carrier_command', text, 14);
+            message.anchor.x = 0.5; message.anchor.y = 0.5;
+            message.tint = colour;
+        }
+        
+        function closeDialog() {
+            message.destroy();
+            dialogMode = false;
+            game.physics.arcade.isPaused = false;
+            gameTimer.resume();
+            game.add.tween(messageBar.scale).to({y: 0}, 100, null, true);
         }
         
         
