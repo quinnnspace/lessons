@@ -19,13 +19,15 @@
 
     window.onload = function() {
 
-        var game = new Phaser.Game(960, 420, Phaser.AUTO, '', { preload: preload, create: create, update: update });
+        var game = new Phaser.Game(960, 420, Phaser.AUTO, '', { preload: preload, create: create, update: update }, false, false);
       
         function preload () {
             game.load.image('l0base', 'assets/l0_base.png');
             game.load.image('l0barriers', 'assets/l0_barriers.png');
             game.load.image('platform', 'assets/platform.png');
             game.load.image('blackbar', 'assets/blackbar.png');
+            
+            game.load.spritesheet('downarrow', 'assets/downarrow.png', 60, 60, 2);
             
             game.load.bitmapFont('carrier_command', 'assets/carrier_command.png', 'assets/carrier_command.xml');
             
@@ -41,6 +43,13 @@
         
         var player;
         
+        var skills = {
+            move: false,
+            stepUp: false,
+            jump: false,
+            moveInAir: false
+        }
+        
         var barriersCollisionGroup;
         
         var platforms;
@@ -51,8 +60,13 @@
         
         var blackbars;
         var topBar, bottomBar, messageBar;
+        
         var message;
         var dialogMode = false;
+        var dialogCount;
+        var dialogTimer;
+        var dialogButton;
+        var currentSpeaker;
         
         // Phaser functions
                 
@@ -60,11 +74,14 @@
             // Start physics and set general properties for game
             game.physics.startSystem(Phaser.Physics.ARCADE);
             
+            game.stage.smoothed = false;
+            
             game.scale.scaleMode = Phaser.ScaleManager.SHOW_ALL;
             game.scale.pageAlignVertically = true;
+            game.scale.pageAlignHorizontally = true;
             game.stage.disableVisibilityChange = true;
             
-            gameTimer = new Phaser.Timer(game, false);
+            gameTimer = game.time.create(false);
             gameTimer.start();
             
             createBars();
@@ -76,6 +93,15 @@
             player = addPlayer(185, 138);
 
             createBars();
+            
+            dialogTimer = game.time.create(false);
+            dialogButton = game.add.sprite(game.width - 50, game.height /2, 'downarrow');
+            dialogButton.scale.setTo(0.5,0.5);
+            dialogButton.anchor.y = 0.5;
+            dialogButton.visible = false;
+            dialogButton.animations.add('press', [0,1], 2, true);
+            dialogButton.animations.play('press');
+            
         }
         
         function update () {
@@ -90,9 +116,9 @@
                 game.physics.arcade.overlap(player, lessons, collectLesson);
 
                 playerControl();        
-            } else {
+            } else if (dialogButton.visible) {
                 if (cursors.down.isDown) {
-                    closeDialog();
+                    continueDialog();
                 }
             }
             
@@ -166,7 +192,7 @@
         
         function addPlayer(x, y) {
             var player = game.add.sprite(x, y, 'player');
-            player.scale.setTo(0.05, 0.05);
+            player.scale.setTo(0.06, 0.06);
             
             game.physics.arcade.enable(player);
             
@@ -269,20 +295,20 @@
             switch (level) {
                 case 0: // Level 0 : Homestead
                     lessonColour = 0xe76600;
-                    spawnLesson(11, 67, 'Hopping up steps is all well and good, but jumping can get me so many more places!', 'jump');
-                    spawnLesson(146, 73, '', '');
-                    spawnLesson(40, 71, '', '');
-                    spawnLesson(90, 22), '', '';
-                    spawnLesson(10,40, '', '');
+                    spawnLesson(11, 67, ['Hopping up steps is all well and good, but jumping can get me so many more places!'], 'jump');
+                    spawnLesson(146, 73, [''], '');
+                    spawnLesson(40, 71, [''], '');
+                    spawnLesson(90, 22, [''], '');
+                    spawnLesson(10,40, [''], '');
                     break;
             }
         }
         
-        function spawnLesson(xPos, yPos, text, skill) {
+        function spawnLesson(xPos, yPos, dialog, skill) {
             var lesson = lessons.create(xPos*5, yPos*5, 'player');
-            lesson.scale.setTo(0.037, 0.037);
+            lesson.scale.setTo(0.04, 0.04);
             lesson.tint = lessonColour;
-            lesson.text = text;
+            lesson.dialog = dialog;
             lesson.skill = skill;
             
             lesson.body.bounce.y = 0.9;
@@ -290,6 +316,7 @@
             
             gameTimer.add(randTime(1000, 4000), bounceLesson, this, lesson);
             gameTimer.add(randTime(1000, 6000), turnLesson, this, lesson);
+            
 
         }
         
@@ -312,22 +339,49 @@
         }
         
         function collectLesson(player, lesson) {
-            openDialog('Testing testing 1, 2, 3', lessonColour);
+            openDialog(lesson);
             lesson.kill();
         }
         
-        function openDialog(text, colour) {
+        function openDialog(object) {
+            dialogCount = 0;
+            dialogTimer.start();
+            dialogTimer.add(500, dialogButtonOn);
+            
+            currentSpeaker = object;
+            
             dialogMode = true;
             game.physics.arcade.isPaused = true;
             gameTimer.pause();
             
             game.add.tween(messageBar.scale).to({y: 50}, 100, null, true);
-            message = game.add.bitmapText(game.width/2, game.height/2, 'carrier_command', text, 14);
+            message = game.add.bitmapText(game.width/2, game.height/2, 'carrier_command', object.dialog[dialogCount], 12);
+            message.maxWidth = 800;
             message.anchor.x = 0.5; message.anchor.y = 0.5;
-            message.tint = colour;
+            message.tint = lessonColour;
+        }
+        
+        function dialogButtonOn() {
+            dialogButton.visible = true;
+        }
+        
+        function dialogButtonOff() {
+            dialogButton.visible = false;
+        }
+        
+        function continueDialog() {
+            dialogCount++;
+            dialogButtonOff();
+            if (dialogCount >= currentSpeaker.dialog.length) {
+                closeDialog();
+            } else {
+                message.text = currentSpeaker.dialog[dialogCount];
+                dialogTimer.add(500, dialogButtonOn);
+            }
         }
         
         function closeDialog() {
+            
             message.destroy();
             dialogMode = false;
             game.physics.arcade.isPaused = false;
