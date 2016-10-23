@@ -44,10 +44,10 @@
         var player;
         
         var skills = {
-            move: false,
+            move: true,
             stepUp: false,
             jump: false,
-            moveInAir: false
+            moveInAir: true
         }
         
         var barriersCollisionGroup;
@@ -60,6 +60,8 @@
         
         var blackbars;
         var topBar, bottomBar, messageBar;
+        
+        var fear;
         
         var message;
         var dialogMode = false;
@@ -90,7 +92,8 @@
                     
             buildLevel(currentLevel);
                                                 
-            player = addPlayer(185, 138);
+            player = addPlayer(74, 72);
+            fear = spawnFear(182, 29);
 
             createBars();
             
@@ -114,6 +117,8 @@
                 game.physics.arcade.collide(lessons, platforms);
 
                 game.physics.arcade.overlap(player, lessons, collectLesson);
+                
+                game.physics.arcade.collide(fear, barriersCollisionGroup);
 
                 playerControl();        
             } else if (dialogButton.visible) {
@@ -126,12 +131,30 @@
         
         // quinnn functions: less fun, more shuns
         
+        function spawnFear(x, y) {
+            var fear = game.add.sprite(x*5, y*5, 'player');
+            fear.scale.setTo(0.1, 0.1);
+            fear.tint = 0x000000;
+            fear.frame = 1;
+            game.physics.arcade.enable(fear);
+            
+            fear.body.bounce.y = 0.9;
+            fear.body.gravity.y = 580;
+            
+            
+            gameTimer.add(randTime(1000, 4000), bounce, this, fear);
+            
+            return fear;
+            
+            
+        }
+        
         function playerControl() {
             if (player.body.touching.down) { // On the ground or a platform
-                if (cursors.left.isDown && player.body.velocity.x > -150 && !cursors.right.isDown) {
+                if (cursors.left.isDown && player.body.velocity.x > -150 && !cursors.right.isDown && skills.move) {
                     if (player.body.velocity.x > 0) { player.body.velocity.x = 0;}
                     player.body.velocity.x -= 30;
-                } else if (cursors.right.isDown && player.body.velocity.x < 150 && !cursors.left.isDown) {
+                } else if (cursors.right.isDown && player.body.velocity.x < 150 && !cursors.left.isDown && skills.move) {
                     if (player.body.velocity.x < 0) { player.body.velocity.x = 0;}
                     player.body.velocity.x += 30;
                 }
@@ -145,15 +168,15 @@
                 }
 
                 
-                if (cursors.up.isDown) {
+                if (cursors.up.isDown && skills.jump) {
                     player.body.velocity.y = -230;
                 }
                 
             } else { // In the air
-                if (cursors.left.isDown && player.body.velocity.x > -100 && !cursors.right.isDown) {
+                if (cursors.left.isDown && player.body.velocity.x > -100 && !cursors.right.isDown && skills.moveInAir) {
                     if (player.body.velocity.x > 0) { player.body.velocity.x = 0;}
                     player.body.velocity.x -= 15;
-                } else if (cursors.right.isDown && player.body.velocity.x < 100 && !cursors.left.isDown) {
+                } else if (cursors.right.isDown && player.body.velocity.x < 100 && !cursors.left.isDown && skills.moveInAir) {
                     if (player.body.velocity.x < 0) { player.body.velocity.x = 0;}
                     player.body.velocity.x += 15;
                 }
@@ -191,7 +214,7 @@
         }
         
         function addPlayer(x, y) {
-            var player = game.add.sprite(x, y, 'player');
+            var player = game.add.sprite(x*5, y*5, 'player');
             player.scale.setTo(0.06, 0.06);
             
             game.physics.arcade.enable(player);
@@ -247,7 +270,7 @@
         
         function barrierCollision(sprite, barrier) {
             // Step up
-            if (barrier.body.height < 6 && (sprite.body.touching.right || sprite.body.touching.left)) {
+            if (barrier.body.height < 6 && (sprite.body.touching.right || sprite.body.touching.left) && skills.stepUp) {
                 sprite.body.velocity.y -= 30;
             }
             
@@ -259,7 +282,7 @@
             switch (level) {
                 case 0: // Level 0 : Homestead
                     platformColour = 0xe76600;
-                    makePlatform(36, 33, 14);
+                    makePlatform(38, 33, 10);
                     makePlatform(65, 26, 60);
                     makePlatform(132, 32, 12);
                     makePlatform(121, 39, 11);
@@ -295,42 +318,56 @@
             switch (level) {
                 case 0: // Level 0 : Homestead
                     lessonColour = 0xe76600;
-                    spawnLesson(11, 67, ['Hopping up steps is all well and good, but jumping can get me so many more places!'], 'jump');
-                    spawnLesson(146, 73, [''], '');
-                    spawnLesson(40, 71, [''], '');
-                    spawnLesson(90, 22, [''], '');
-                    spawnLesson(10,40, [''], '');
+                    spawnLesson(11, 67, ['Hopping up steps is all well and good',
+                                         'but jumping can get me so many more places!',
+                                        '*** JUMPING SKILL UNLOCKED ***',
+                                        'Press "UP" to jump'], 'jump');
+                    spawnLesson(146, 73, ['Sometimes even small steps can seem impossible',
+                                         'But with courage they can be overcome!',
+                                         '*** STEPUP SKILL UNLOCKED ***',
+                                         'Move against steps to hop up'], 'stepUp');
+                    spawnLesson(40, 71, ['Not every piece of myself unlocks skills.',
+                                        'But collecting them all will give me the',
+                                        'insight I need to conquer my FEAR and',
+                                        'reach the next level.'], '');
+                    spawnLesson(90, 22, ['Staying still is usually the safest thing to do',
+                                        "But it's a bit boring, isn't it?"], '');
+                    spawnLesson(10,40, ['Adventure awaits just past the BLACK beast of my FEAR!',
+                                       "Leaving home is scary, but I've stayed here too long."], '');
+                    spawnLesson(167, 59, ['With effort I can direct myself, even in the air',
+                                          'This can make landing jumps much easier.',
+                                         'Press "LEFT" and "RIGHT" to adjust your direction'], '');
                     break;
             }
         }
         
         function spawnLesson(xPos, yPos, dialog, skill) {
             var lesson = lessons.create(xPos*5, yPos*5, 'player');
-            lesson.scale.setTo(0.04, 0.04);
+            lesson.scale.setTo(0.03, 0.03);
             lesson.tint = lessonColour;
             lesson.dialog = dialog;
             lesson.skill = skill;
             
-            lesson.body.bounce.y = 0.9;
+            lesson.body.bounce.y = 0.85;
             lesson.body.gravity.y = 300;
             
-            gameTimer.add(randTime(1000, 4000), bounceLesson, this, lesson);
-            gameTimer.add(randTime(1000, 6000), turnLesson, this, lesson);
+            gameTimer.add(randTime(1000, 4000), bounce, this, lesson);
+            gameTimer.add(randTime(1000, 6000), turn, this, lesson);
             
 
         }
         
-        function bounceLesson(lesson) {
-            if (lesson.alive) {
-                lesson.body.velocity.y = -50;
-                gameTimer.add(randTime(1000, 4000), bounceLesson, this, lesson);
+        function bounce(object) {
+            if (object.alive) {
+                object.body.velocity.y = -75;
+                gameTimer.add(randTime(1000, 4000), bounce, this, object);
             } 
         }
         
-        function turnLesson(lesson) {
-            if (lesson.alive) {
-                lesson.frame = (lesson.frame + 1) % 2;
-                gameTimer.add(randTime(1000, 6000), turnLesson, this, lesson);
+        function turn(object) {
+            if (object.alive) {
+                object.frame = (object.frame + 1) % 2;
+                gameTimer.add(randTime(1000, 6000), turn, this, object);
             }
         }
         
@@ -341,6 +378,10 @@
         function collectLesson(player, lesson) {
             openDialog(lesson);
             lesson.kill();
+            if (lesson.skill.length > 0) {
+                skills[lesson.skill] = true;
+            }
+            
         }
         
         function openDialog(object) {
@@ -358,7 +399,7 @@
             message = game.add.bitmapText(game.width/2, game.height/2, 'carrier_command', object.dialog[dialogCount], 12);
             message.maxWidth = 800;
             message.anchor.x = 0.5; message.anchor.y = 0.5;
-            message.tint = lessonColour;
+            // message.tint = lessonColour;
         }
         
         function dialogButtonOn() {
