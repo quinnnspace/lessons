@@ -63,7 +63,8 @@
             move: true,
             stepUp: false,
             jump: false,
-            moveInAir: true
+            moveInAir: true,
+            wallJump: true
         }
         
         var insightCount;
@@ -93,8 +94,7 @@
         
         var victory;
         
-
-        
+                
         // Phaser functions
                 
         function create () {
@@ -110,7 +110,7 @@
             
             gameTimer = game.time.create(false);
             gameTimer.start();
-        
+            
             cursors = game.input.keyboard.createCursorKeys();
                     
             buildLevel(currentLevel);
@@ -173,10 +173,13 @@
                     createBars(0);
                     break;
                 case 1: // Level 1: Adventure
-                    game.stage.backgroundColor = '#a8dba8'
-                    player = addPlayer(10, 67);
-                    fear = spawnFear(169,65);
+                    game.stage.backgroundColor = '#bce6ff'
+                    player = addPlayer(1, 64);
+                    fear = spawnFear(161,19);
+                    addVictory(179, 69, 9, 7)
                     createBars(40);
+                    skills.stepUp = true;
+                    skills.jump = true;
                     break;
             }
         }
@@ -189,7 +192,11 @@
         }
         
         function nextLevel(player, victory) {
-            window.location.search = '?l=' + (currentLevel + 1)
+            barCollide = false;
+            game.add.tween(topBar.scale).to({y: game.height/2}, 1000, null, true);
+            game.add.tween(bottomBar.scale).to({y: game.height/2}, 1000, null, true);
+            
+            gameTimer.add(1000, function() {window.location.search = '?l=' + (currentLevel + 1);});
         }
         
         function spawnFear(x, y) {
@@ -249,10 +256,10 @@
                 }
                 
             } else { // In the air
-                if (cursors.left.isDown && player.body.velocity.x > -100 && !cursors.right.isDown && skills.moveInAir) {
+                if (cursors.left.isDown && player.body.velocity.x > -100 && !cursors.right.isDown && skills.moveInAir && !player.body.touching.right) {
                     if (player.body.velocity.x > 0) { player.body.velocity.x = 0;}
                     player.body.velocity.x -= 15;
-                } else if (cursors.right.isDown && player.body.velocity.x < 100 && !cursors.left.isDown && skills.moveInAir) {
+                } else if (cursors.right.isDown && player.body.velocity.x < 100 && !cursors.left.isDown && skills.moveInAir && !player.body.touching.left) {
                     if (player.body.velocity.x < 0) { player.body.velocity.x = 0;}
                     player.body.velocity.x += 15;
                 }
@@ -336,6 +343,28 @@
                     makeBarrier(173, 42, 19, 1);
                     
                     break;
+                    
+                case 1: // Level 1: City
+                    makeBarrier(0, 69, 179, 7);
+                    makeBarrier(0, 22, 4, 39);
+                    makeBarrier(39, 22, 13, 47);
+                    makeBarrier(82, 38, 12, 31);
+                    makeBarrier(155, 27, 19, 42);
+                    makeBarrier(190, 13, 2, 56);
+                    makeBarrier(188, 69, 178, 7);
+                    makeBarrier(1, 69, 3, 7);
+                    makeBarrier(121, 9, 11, 3);
+                    makeBarrier(121, 12, 3, 12);
+                    makeBarrier(121, 24, 10, 4);
+                    makeBarrier(129, 28, 3, 12);
+                    makeBarrier(121, 40, 11, 4);
+                    makeBarrier(121, 44, 3, 12);
+                    makeBarrier(121, 56, 11, 3);
+                    makeBarrier(107, 16, 2, 45);
+                    
+                    
+                    
+                    
             }
         }
         
@@ -349,7 +378,7 @@
             // Step up
             if (barrier.body.height < 6 && (sprite.body.touching.right || sprite.body.touching.left) && skills.stepUp) {
                 sprite.body.velocity.y -= 30;
-            }
+            } 
             
         }
             
@@ -357,7 +386,7 @@
             platforms = game.add.group();
             platforms.enableBody = true;
             switch (level) {
-                case 0: // Level 0 : Homestead
+                case 0: // Level 0: Homestead
                     platformColour = 0xe76600;
                     makePlatform(38, 33, 10);
                     makePlatform(65, 26, 60);
@@ -369,8 +398,32 @@
                     makePlatform(114, 62, 7);
                     makePlatform(124, 69, 5);
                     
-                    
                     break;
+                    
+                case 1: // Level 1: City
+                    platformColour = 0x0b486b;
+                    makePlatform(4, 25, 3);
+                    makePlatform(4, 31, 6);
+                    makePlatform(4, 40, 5);
+                    makePlatform(4, 50, 3);
+                    makePlatform(21, 35, 2);
+                    makePlatform(20, 39, 4);
+                    makePlatform(18, 44, 8);
+                    makePlatform(14, 51, 4);
+                    makePlatform(25, 51, 4);
+                    makePlatform(8, 56, 5);
+                    makePlatform(19, 56, 6);
+                    makePlatform(30, 56, 5);
+                    makePlatform(37, 26, 2);
+                    makePlatform(35, 31, 4);
+                    makePlatform(68, 40, 4);
+                    makePlatform(63, 48, 4);
+                    makePlatform(68, 55, 4);
+                    makePlatform(63, 61, 4);
+                    makePlatform(174, 35, 7);
+                    makePlatform(183, 47, 7);
+                    makePlatform(36, 64,  3);
+                    
             }
             
         }
@@ -505,7 +558,7 @@
             game.physics.arcade.isPaused = false;
             gameTimer.resume();
             game.add.tween(messageBar.scale).to({y: 0}, 100, null, true);
-            gameTimer.add(500, function() {encounter = false;});
+            gameTimer.add(1000, function() {encounter = false;});
         }
         
         
