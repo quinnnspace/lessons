@@ -64,7 +64,7 @@
             stepUp: false,
             jump: false,
             moveInAir: true,
-            wallJump: true
+            end: false
         }
         
         var insightCount;
@@ -94,6 +94,7 @@
         
         var victory;
         
+        var end;
                 
         // Phaser functions
                 
@@ -141,6 +142,13 @@
                 
                 game.physics.arcade.overlap(player, victory, nextLevel)
                 
+                if (skills.end) {
+                    gameTimer.add(1000, function() {
+                        end = true;
+                        openDialog({dialog: ["THE END (for now)"]})
+                    });
+                }
+                
                 if (barCollide) {
                     game.physics.arcade.collide(player,blackbars);
                 }
@@ -166,14 +174,14 @@
             
             switch (level) {
                 case 0: // Level 0 : Homestead
-                    game.stage.backgroundColor = '#fdde95'
+                    game.stage.backgroundColor = '#fdde95';
                     player = addPlayer(74, 72);
                     fear = spawnFear(182, 29);
                     addVictory(187,33,5,7);
                     createBars(0);
                     break;
                 case 1: // Level 1: Adventure
-                    game.stage.backgroundColor = '#bce6ff'
+                    game.stage.backgroundColor = '#bce6ff';
                     player = addPlayer(1, 64);
                     fear = spawnFear(161,19);
                     addVictory(179, 69, 9, 7)
@@ -454,18 +462,42 @@
                                          'But with courage they can be overcome!',
                                          '*** STEPUP SKILL UNLOCKED ***',
                                          'Move against steps to hop up'], 'stepUp');
-                    spawnLesson(40, 71, ['Not every piece of myself unlocks skills.',
+                    spawnLesson(40, 71, ['Not every "piece of myself" unlocks skills.',
                                         'But collecting them all will give me the',
                                         'insight I need to conquer my FEAR and',
                                         'reach the next level.'], '');
                     spawnLesson(90, 22, ['Staying still is usually the safest thing to do',
                                         "But it's a bit boring, isn't it?"], '');
-                    spawnLesson(10,40, ['Adventure awaits just past the BLACK beast of my FEAR!',
-                                       "Leaving home is scary, but I've stayed here too long."], '');
+                    spawnLesson(10,40, ["Leaving home is scary, but I've stayed here too long."], '');
                     spawnLesson(167, 59, ['With effort I can direct myself, even in the air',
                                           'This can make landing jumps much easier.',
                                          'Press "LEFT" and "RIGHT" to adjust direction'], '');
                     break;
+                    
+                case 1: // Level 1 : City
+                    lessonColour = 0x0b4864;
+                    spawnLesson( 20, 66, ['This was to be a game about learning new things',
+                                         'About attempting difficult challenges',
+                                         'And in a way, it was.'], '');
+                    spawnLesson( 44, 19, ['Fear and despair are some of the things' ,'that hold me back',
+                                         'But they are not the only things'], '');
+                    spawnLesson( 21, 32, ['I hoped by building this I could complete something',
+                                         'Despite the doubts that plague me'], '');
+                    spawnLesson( 64, 45, ['Over ambition',
+                                         'Lack of experience',
+                                         'Inability to concentrate',
+                                         'These are all challenges I have yet to overcome'], '');
+                    spawnLesson( 87, 35, ['This game is incomplete.',
+                                         'Had everything gone to plan,',
+                                         'At this point you would have gained the wall jump ability',
+                                         "But I couldn't get it to work",
+                                         'And I ran out of time'], '');
+                    spawnLesson( 107, 65, ['So unfortunately this is all the game there is',
+                                          "I'm pleased with how far I got",
+                                          'But I had hoped to go much further'], '');
+                    spawnLesson( 144, 66, ['I plan to complete this!','But this is it as far as the game jam goes','72 hours of work',"I'm just completely frazzled", 'But thanks for playing','- quinnn'], 'end');
+                    
+                    
             }
         }
         
@@ -533,7 +565,9 @@
         }
         
         function dialogButtonOn() {
-            dialogButton.visible = true;
+            if (!end) {
+                dialogButton.visible = true;
+            }
         }
         
         function dialogButtonOff() {
