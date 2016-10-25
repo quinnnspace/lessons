@@ -200,6 +200,8 @@
         }
         
         function nextLevel(player, victory) {
+            game.physics.arcade.isPaused = true;
+            dialogMode = true;
             barCollide = false;
             game.add.tween(topBar.scale).to({y: game.height/2}, 1000, null, true);
             game.add.tween(bottomBar.scale).to({y: game.height/2}, 1000, null, true);
